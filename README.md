@@ -6,13 +6,12 @@ Claude Code writes every conversation to `~/.claude/projects/**/*.jsonl`. `tx` s
 that corpus and prints stable `<transcript>:<line>` citations you can feed back into
 `tx cite` to read any record in full.
 
-Seven properties of the corpus make a naive `grep` silently wrong — subagent transcripts
-nested a directory deeper, project directories whose names begin with `-` (so shell globs
+Naive `grep` over session transcripts gets lots of things silently wrong: subagent transcripts
+nest beneath subdirectories, project directories names often begin with `-` (so shell globs
 and `find` parse them as flags), `user` records that are not the operator, operator text
 that arrives as a separate `attachment` or `queue-operation` record, and message content
-that is sometimes a list of blocks and sometimes a bare string. Each one produces a
-confident empty result. `tx` handles all of them; the module docstring in
-[src/tx/cli.py](src/tx/cli.py) spells out each trap.
+that is sometimes a list of blocks and sometimes a bare string. `tx` handles all of them;
+the module docstring in [src/tx/cli.py](src/tx/cli.py) spells out each trap.
 
 ## Install
 
@@ -26,7 +25,7 @@ From a local checkout:
 uv tool install --python 3.14t ~/dev/tx
 ```
 
-Either form puts the `tx` executable in uv's tool bin directory — `$XDG_BIN_HOME`, else
+Install puts the `tx` executable in uv's tool bin directory — `$XDG_BIN_HOME`, else
 `$XDG_DATA_HOME/../bin`, else `~/.local/bin` — which is the same location on macOS and
 Linux. Run `uv tool update-shell` once if that directory is not already on `PATH`.
 
