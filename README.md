@@ -47,10 +47,13 @@ uv tool install --python 3.14t --editable ~/dev/tx
 free-threaded interpreter (`3.14t`) is the fast path and what `.python-version` selects.
 It runs correctly on any CPython >= 3.13; the GIL just serializes the scan.
 
-orjson publishes no free-threaded wheel, and its source build refuses a free-threaded
-target unless `ORJSON_BUILD_FREETHREADED=1` is set. uv exports it from `[tool.uv.env]`
-during the build; a manual `pip install` into a free-threaded environment needs it in the
-environment, plus rustc >= 1.95.
+orjson publishes no free-threaded wheel. If the install has to build it from source for a
+free-threaded target, that build refuses to start unless `ORJSON_BUILD_FREETHREADED=1` is
+exported, and it needs rustc >= 1.95:
+
+```bash
+ORJSON_BUILD_FREETHREADED=1 uv tool install --python 3.14t ~/dev/tx
+```
 
 ## Use
 
