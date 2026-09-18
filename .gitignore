@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+/build/
+
+# Tool caches
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.rumdl_cache/
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
+
+# Scratch
+.scratch/

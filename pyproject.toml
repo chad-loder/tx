@@ -1,0 +1,222 @@
+[build-system]
+requires = ["hatchling", "hatch-fancy-pypi-readme>=24.1.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tx"
+description = "Ad-hoc search over Claude Code session transcripts"
+dynamic = ["version", "readme"]
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.13"
+authors = [
+    { name = "tx contributors" },
+]
+keywords = [
+    "claude-code",
+    "transcripts",
+    "jsonl",
+    "search",
+    "cli",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+dependencies = [
+    "orjson>=3.12",
+    "toonify>=1.6",
+]
+
+[project.scripts]
+tx = "tx.cli:entrypoint"
+
+[project.urls]
+Homepage = "https://github.com/chad-loder/tx"
+Issues = "https://github.com/chad-loder/tx/issues"
+Source = "https://github.com/chad-loder/tx"
+Changelog = "https://github.com/chad-loder/tx/blob/main/CHANGELOG.md"
+
+[tool.hatch.version]
+path = "src/tx/_version.py"
+
+[tool.hatch.metadata.hooks.fancy-pypi-readme]
+content-type = "text/markdown"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "README.md"
+end-before = "<!-- pypi-end -->"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+pattern = '\[([^\]]+)\]\((?!https?://)([^)]+)\)'
+replacement = '[\1](https://github.com/chad-loder/tx/blob/main/\2)'
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+pattern = '\]\(LICENSE\)'
+replacement = '](https://github.com/chad-loder/tx/blob/main/LICENSE)'
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tx"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/tests", "/CHANGELOG.md", "pyproject.toml", "LICENSE", "README.md"]
+
+[dependency-groups]
+# PEP 735 — contributors / CI only, never published as extras.
+test = [
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+]
+lint = [
+    "ruff>=0.15.11",
+    "mypy>=1.19.1,<1.20",
+    "pyright>=1.1.408",
+    "codespell>=2.4.2",
+    "validate-pyproject[all]>=0.25",
+]
+dev = [
+    "pyclean>=3.6.0",
+]
+maintainer = [
+    { include-group = "dev" },
+    "python-semantic-release>=10.5.3",
+    "rumdl>=0.1.76",
+]
+
+[tool.uv]
+default-groups = ["test", "lint"]
+# Resolver cutoff: ignore PyPI uploads newer than this, relative to resolve time.
+exclude-newer = "72h"
+
+# ---------------------------------------------------------------------------
+# Tool configuration
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "ANN",      # type annotations — mypy / pyright are authoritative
+    "COM812",   # missing trailing comma — conflicts with ruff formatter
+    "ISC001",   # implicit string concat — conflicts with ruff formatter
+    "D107",     # missing __init__ docstring — class docstring suffices
+    "E501",     # line length — formatter handles this
+    "EM101",    # string literal in exception — descriptive messages are intentional
+    "EM102",    # f-string in exception — same
+    "TRY003",   # long exception message — same
+    "T201",     # print — this is a CLI that writes to stdout
+    "PLC0415",  # import not at top level — lazy imports keep startup fast
+    "PLR0913",  # too many arguments — the scan functions thread many knobs
+    "S603",     # subprocess without shell — argv is constructed, never user text
+]
+unfixable = ["F401"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 16
+
+[tool.ruff.lint.pylint]
+max-args = 14
+max-branches = 40
+max-statements = 120
+max-returns = 8
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-first-party = ["tx"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "D", "ANN", "INP001", "PLR2004"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.13"
+explicit_package_bases = true
+mypy_path = ["src"]
+cache_dir = ".mypy_cache"
+sqlite_cache = true
+incremental = true
+exclude = '''(?x)(
+    ^\.venv/
+    | ^build/
+    | ^dist/
+    | \.egg-info/
+)'''
+
+[[tool.mypy.overrides]]
+# toonify ships no stubs.
+module = ["toon.*"]
+ignore_missing_imports = true
+
+[tool.pyright]
+pythonVersion = "3.13"
+pythonPlatform = "All"
+typeCheckingMode = "basic"
+include = ["src", "tests"]
+exclude = [".venv", "build", "dist", "**/__pycache__"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = ["--tb=short", "--strict-markers", "--strict-config", "--import-mode=importlib"]
+xfail_strict = true
+filterwarnings = ["once::Warning"]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["tx"]
+branch = true
+data_file = ".coverage"
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+precision = 1
+sort = "-Cover"
+exclude_also = [
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "^\\s*\\.\\.\\.$",
+    "@overload",
+    "pragma: no cover",
+]
+
+[tool.semantic_release]
+commit_parser = "conventional"
+major_on_zero = false
+allow_zero_version = true
+tag_format = "v{version}"
+version_variables = ["src/tx/_version.py:__version__"]
+build_command = "uv lock --upgrade-package tx"
+
+[tool.semantic_release.changelog]
+mode = "update"
+
+[tool.semantic_release.changelog.default_templates]
+changelog_file = "CHANGELOG.md"
+
+[tool.semantic_release.remote]
+type = "github"
+token = { env = "GH_TOKEN" }
+
+[tool.semantic_release.branches.main]
+match = "^main$"
+prerelease = false
+
+[tool.codespell]
+skip = "*.lock,./dist,./build,./.mypy_cache,./.ruff_cache,./.venv"
